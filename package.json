@@ -1,6 +1,6 @@
 {
   "name": "@willh/git-setup",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "bin": "./bin/index.js",
   "repository": {
