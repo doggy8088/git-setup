@@ -55,6 +55,8 @@ git config --global alias.ll   "log --pretty=format:'%h %ad | %s%d [%Cgreen%an%C
 git config --global alias.lg   "log --graph --pretty=format:'%Cred%h%Creset %ad |%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset [%Cgreen%an%Creset]' --abbrev-commit --date=short"
 git config --global alias.alias "config --get-regexp ^alias\."
 
+git config --global alias.ignore '!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi'
+
 # 必須是 win32 平台且有安裝 TortoiseGit 才會設定 tlog 這個 alias
 git config --global alias.tlog "!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe' /command:log /path:."
 
