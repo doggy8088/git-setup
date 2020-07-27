@@ -61,6 +61,7 @@ const fs = require('fs');
     await cmd("git config --global alias.type \"cat-file -t\"");
     await cmd("git config --global alias.dump \"cat-file -p\"");
     await cmd("git config --global alias.lo   \"log --oneline\"");
+    await cmd("git config --global alias.ls   \"log --show-signature\"");
     await cmd("git config --global alias.ll   \"log --pretty=format:'%h %ad | %s%d [%Cgreen%an%Creset]' --graph --date=short\"");
     await cmd("git config --global alias.lg   \"log --graph --pretty=format:'%Cred%h%Creset %ad |%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset [%Cgreen%an%Creset]' --abbrev-commit --date=short\"");
     await cmd("git config --global alias.alias \"config --get-regexp ^alias\\.\"");
