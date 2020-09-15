@@ -1,5 +1,9 @@
 # @willh/git-setup
 
+## 0.4.0
+
+- Add `git iac` alias that doing `git init && git add . && git commit -m 'Initial commit'` at once.
+
 ## 0.3.0
 
 - Add `git ls` alias that shows log with GPG signature information

@@ -72,6 +72,12 @@ const fs = require('fs');
         await cmd("git config --global alias.ignore '!'\"gi() { curl -sL https://www.gitignore.io/api/\\$@ ;}; gi\"");
     }
 
+    if (os === 'win32') {
+        await cmd("git config --global alias.iac \"!giac() { git init && git add . && git commit -m 'Initial commit' ;}; giac\"");
+    } else {
+        await cmd("git config --global alias.iac '!'\"giac() { git init && git add . && git commit -m 'Initial commit' ;}; giac\"");
+    }
+
     if (os === 'win32' && fs.existsSync('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {
         await cmd("git config --global alias.tlog \"!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe' /command:log /path:.");
     }
