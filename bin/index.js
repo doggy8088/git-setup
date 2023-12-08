@@ -73,9 +73,9 @@ const fs = require('fs');
     }
 
     if (os === 'win32') {
-        await cmd("git config --global alias.iac \"!giac() { git init && git add . && git commit -m 'Initial commit' ;}; giac\"");
+        await cmd("git config --global alias.iac \"!giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"");
     } else {
-        await cmd("git config --global alias.iac '!'\"giac() { git init && git add . && git commit -m 'Initial commit' ;}; giac\"");
+        await cmd("git config --global alias.iac '!'\"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"");
     }
 
     if (os === 'win32' && fs.existsSync('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {
