@@ -1,6 +1,6 @@
 # git-setup
 
-本工具會全自動設定 Git 版控環境，並且跨平台支援 Windows, Linux, macOS 等作業系統的命令列環境，尤其針對中文環境經常會出現亂碼的問題都會完整的解決。
+本工具會全自動設定 Git 版控環境，並且跨平台支援 Windows, Linux, macOS 等作業系統的命令列環境，尤其針對中文環境經常會出現亂碼的問題都會完美的解決。
 
 ## 先決條件
 
@@ -63,7 +63,7 @@ git config --global alias.iac '!giac() { git init -b main && git add . && git co
 # 必須是 Linux/macOS 平台才會執行以下設定
 git config --global alias.ignore '!'"gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
 git config --global alias.iac '!'"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
-
+git config --global alias.rc  "!grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc"
 
 # 必須是 Windows 平台且有安裝 TortoiseGit 才會設定 tlog 這個 alias
 git config --global alias.tlog "!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe' /command:log /path:."
@@ -71,6 +71,48 @@ git config --global alias.tlog "!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\Tortoise
 # 必須是 Windows 平台才會將預設編輯器設定為 notepad
 git config --global core.editor notepad
 ```
+
+## 其他調整建議
+
+1. `core.editor`
+
+    在選擇 `git commit` 所使用的文字編輯器時，每個人都有不同的偏好，但是 Git 預設的 `vim` 應該是大多數人不熟悉的，所以這個工具的預設會選擇 `notepad` (記事本) 為主要編輯器，這是因為在 Windows 作業系統上，這是唯一所有人都有的應用程式，不需要額外安裝。
+
+    如果你想調整用 Visual Studio Code 作為預設編輯器，可以執行以下指令：
+
+    ```sh
+    git config --global core.editor "code --wait"
+    ```
+
+    如果習慣用 Visual Studio Code Insider 版本，可以執行以下指令：
+
+    ```sh
+    git config --global core.editor "code-insiders --wait"
+    ```
+
+2. `core.autocrlf`
+
+    在 Windows 平台上安裝 Git 時，預設 `core.autocrlf` 設定值為 `true`，而本工具則設定為 `false` 為主。
+
+    在 Windows 平台上，Git 預設會將檔案的換行符號 `LF` 字元轉換成 `CRLF` 字元，這是因為 Windows 作業系統的檔案換行符號是 `CRLF` 字元，但是在 Linux 與 macOS 作業系統上，檔案換行符號是 `LF` 字元。
+    
+    由於現在 Windows 大多數的編輯器都已經能正確處理 `LF` 字元，不再需要自動轉換了。如果你所參與的專案，同時有 Windows 與 macOS 開發人員，我也建議設定為 `false` 以避免發生詭異的問題。
+    
+    如果想調整回預設值，可以執行以下指令：
+
+    ```sh
+    git config --global core.autocrlf true
+    ```
+
+3. `pull.rebase`
+
+    在 `git pull` 時，預設會使用 `merge` 的方式合併分支，但是有些人習慣使用 `rebase` 的方式合併分支，這樣可以讓歷史紀錄更加乾淨，不會有多餘的合併紀錄。
+
+    如果你想調整為 `rebase` 的方式，可以執行以下指令：
+
+    ```sh
+    git config --global pull.rebase true
+    ```
 
 ## 提供建議
 

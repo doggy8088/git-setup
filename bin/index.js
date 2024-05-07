@@ -66,16 +66,25 @@ const fs = require('fs');
     await cmd("git config --global alias.lg   \"log --graph --pretty=format:'%Cred%h%Creset %ad |%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset [%Cgreen%an%Creset]' --abbrev-commit --date=short\"");
     await cmd("git config --global alias.alias \"config --get-regexp ^alias\\.\"");
 
+    // git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
     if (os === 'win32') {
         await cmd("git config --global alias.ignore \"!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi\"");
     } else {
         await cmd("git config --global alias.ignore '!'\"gi() { curl -sL https://www.gitignore.io/api/\\$@ ;}; gi\"");
     }
 
+    // git config --global alias.iac  "!giac() { git init && git add . && git commit -m 'Initial commit' ;}; giac"
     if (os === 'win32') {
         await cmd("git config --global alias.iac \"!giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"");
     } else {
         await cmd("git config --global alias.iac '!'\"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"");
+    }
+
+    // git config --global alias.rc  "!grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc"
+    if (os === 'win32') {
+        await cmd("git config --global alias.rc \"!grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc\"");
+    } else {
+        await cmd("git config --global alias.rc '!'\"grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc\"");
     }
 
     if (os === 'win32' && fs.existsSync('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {

@@ -1,5 +1,14 @@
 # @willh/git-setup
 
+## 0.6.2
+
+- Add `git rc` for execute `git reset --hard && git clean -fdx` command with confirmation.
+- Update README.md
+
+## 0.5.0
+
+- Update `git iac` that assume `main` branch for `git init`
+
 ## 0.4.0
 
 - Add `git iac` alias that doing `git init && git add . && git commit -m 'Initial commit'` at once.
