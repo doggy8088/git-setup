@@ -80,11 +80,18 @@ const fs = require('fs');
         await cmd("git config --global alias.iac '!'\"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"");
     }
 
-    // git config --global alias.rc  "!grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc"
+    // git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
     if (os === 'win32') {
-        await cmd("git config --global alias.rc \"!grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc\"");
+        await cmd("git config --global alias.cc \"!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc\"");
     } else {
-        await cmd("git config --global alias.rc '!'\"grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc\"");
+        await cmd("git config --global alias.cc '!'\"grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc\"");
+    }
+
+    // git config --global alias.acp "!gacp() { git add . && git commit --amend -C HEAD && git push -f ;}; gacp"
+    if (os === 'win32') {
+        await cmd("git config --global alias.acp \"!gacp() { git add . && git commit --amend -C HEAD && git push -f ;}; gacp\"");
+    } else {
+        await cmd("git config --global alias.acp '!'\"gacp() { git add . && git commit --amend -C HEAD && git push -f ;}; gacp\"");
     }
 
     if (os === 'win32' && fs.existsSync('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {

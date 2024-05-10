@@ -1,5 +1,10 @@
 # @willh/git-setup
 
+## 0.7.0
+
+- Rename alias from `git rc` to `git cc` which CCleaner is a famous tool for cleaning up the system so `cc` is much easier to remember the alias.
+- Add an alias `git acp` for `git add . && git commit --amend -C HEAD && git push -f`.
+
 ## 0.6.2
 
 - Add `git rc` for execute `git reset --hard && git clean -fdx` command with confirmation.

@@ -21,6 +21,8 @@ npx @willh/git-setup
 
 ## 設定內容
 
+若為 Windows 平台，請記得使用 Command Prompt 執行以下命令，並跳過 Linux/macOS 專屬的命令。
+
 ```sh
 git config --global user.name  ${name}
 git config --global user.email  ${email}
@@ -57,13 +59,16 @@ git config --global alias.lg   "log --graph --pretty=format:'%Cred%h%Creset %ad 
 git config --global alias.alias "config --get-regexp ^alias\."
 
 # 必須是 Windows 平台才會執行以下設定
-git config --global alias.ignore '!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi'
-git config --global alias.iac '!giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac'
+git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
+git config --global alias.iac "!giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
+git config --global alias.acp "!gacp() { git add . && git commit --amend -C HEAD && git push -f ;}; gacp"
+git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
 
 # 必須是 Linux/macOS 平台才會執行以下設定
 git config --global alias.ignore '!'"gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
 git config --global alias.iac '!'"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
-git config --global alias.rc  "!grc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grc"
+git config --global alias.acp '!'"gacp() { git add . && git commit --amend -C HEAD && git push -f ;}; gacp"
+git config --global alias.cc  '!'"grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
 
 # 必須是 Windows 平台且有安裝 TortoiseGit 才會設定 tlog 這個 alias
 git config --global alias.tlog "!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe' /command:log /path:."
@@ -95,9 +100,9 @@ git config --global core.editor notepad
     在 Windows 平台上安裝 Git 時，預設 `core.autocrlf` 設定值為 `true`，而本工具則設定為 `false` 為主。
 
     在 Windows 平台上，Git 預設會將檔案的換行符號 `LF` 字元轉換成 `CRLF` 字元，這是因為 Windows 作業系統的檔案換行符號是 `CRLF` 字元，但是在 Linux 與 macOS 作業系統上，檔案換行符號是 `LF` 字元。
-    
+
     由於現在 Windows 大多數的編輯器都已經能正確處理 `LF` 字元，不再需要自動轉換了。如果你所參與的專案，同時有 Windows 與 macOS 開發人員，我也建議設定為 `false` 以避免發生詭異的問題。
-    
+
     如果想調整回預設值，可以執行以下指令：
 
     ```sh
