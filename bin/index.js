@@ -18,11 +18,35 @@ const fs = require('fs');
         });
     }
 
-    console.log('以下將會協助你進行 Git 版控環境設定：');
-    console.log();
-
-    const name = await ask(`請問您的顯示名稱？`);
-    const email = await ask(`請問您的 E-mail 地址？`);
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    let name = '';
+    let email = '';
+    
+    // Check for --name and --email arguments
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] === '--name' && i + 1 < args.length) {
+            name = args[i + 1];
+            i++; // Skip the next argument as it's the value
+        } else if (args[i] === '--email' && i + 1 < args.length) {
+            email = args[i + 1];
+            i++; // Skip the next argument as it's the value
+        }
+    }
+    
+    // If arguments were not provided, prompt for them
+    if (!name || !email) {
+        console.log('以下將會協助你進行 Git 版控環境設定：');
+        console.log();
+        
+        if (!name) {
+            name = await ask(`請問您的顯示名稱？`);
+        }
+        
+        if (!email) {
+            email = await ask(`請問您的 E-mail 地址？`);
+        }
+    }
 
     if (!name) {
         console.error('You MUST configure user.name setting!');

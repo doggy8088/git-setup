@@ -13,7 +13,14 @@
 npx @willh/git-setup
 ```
 
+或者直接指定名稱與 Email:
+
+```sh
+npx @willh/git-setup --name "Your Name" --email your.email@example.com
+```
+
 - 設定過程會詢問你的 `user.name` 與 `user.email` 資訊
+  - 如果在命令列中使用 `--name` 與 `--email` 參數，則不會詢問
   - Email 會進行格式驗證，格式錯誤會拒絕設定下去
 - 所有 Git 設定都會以 `--global` 為主 (`~/.gitconfig`)
 - Windows 平台會自動設定 `LC_ALL` 與 `LANG` 使用者環境變數

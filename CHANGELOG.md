@@ -1,5 +1,10 @@
 # @willh/git-setup
 
+## 0.8.0
+
+- Add support for command-line arguments `--name` and `--email` to allow non-interactive usage
+- Example: `npx @willh/git-setup --name "Your Name" --email your.email@example.com`
+
 ## 0.7.0
 
 - Rename alias from `git rc` to `git cc` which CCleaner is a famous tool for cleaning up the system so `cc` is much easier to remember the alias.
