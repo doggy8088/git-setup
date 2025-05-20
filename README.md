@@ -133,10 +133,9 @@ git config --global core.editor notepad
 ## 作者資訊
 
 - **Will 保哥**
-- 部落格：https://blog.miniasp.com/
+- 部落格：https://blog.miniasp.com
 - 粉絲團：https://www.facebook.com/will.fans
-- 實體課程：https://coolrare.accupass.com/
-- 線上課程：https://www.udemy.com/user/coolrare (可私訊粉絲團索取優惠券代碼)
+- 線上課程：https://learn.duotify.com
 
 ## 相關連結
 

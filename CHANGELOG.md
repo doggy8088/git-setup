@@ -1,5 +1,10 @@
 # @willh/git-setup
 
+## 0.9.0
+
+- Add support for `-h, --help` and `-v, --version` flags in CLI.
+- Update README links: remove trailing slash from blog URL; update online course URL to `https://learn.duotify.com`.
+
 ## 0.8.0
 
 - Add support for command-line arguments `--name` and `--email` to allow non-interactive usage

@@ -22,7 +22,28 @@ const fs = require('fs');
     const args = process.argv.slice(2);
     let name = '';
     let email = '';
-    
+
+    // Handle help flag
+    if (args.includes('--help') || args.includes('-h')) {
+        console.log(`
+Usage: npx @willh/git-setup [options]
+
+Options:
+  --name <name>       Set Git user.name
+  --email <email>     Set Git user.email
+  -h, --help          Display this help message
+  -v, --version       Display version information
+`);
+        process.exit(0);
+    }
+
+    // Handle version flag
+    if (args.includes('--version') || args.includes('-v')) {
+        const pkg = require('../package.json');
+        console.log(`v${pkg.version}`);
+        process.exit(0);
+    }
+
     // Check for --name and --email arguments
     for (let i = 0; i < args.length; i++) {
         if (args[i] === '--name' && i + 1 < args.length) {
@@ -33,16 +54,16 @@ const fs = require('fs');
             i++; // Skip the next argument as it's the value
         }
     }
-    
+
     // If arguments were not provided, prompt for them
     if (!name || !email) {
         console.log('以下將會協助你進行 Git 版控環境設定：');
         console.log();
-        
+
         if (!name) {
             name = await ask(`請問您的顯示名稱？`);
         }
-        
+
         if (!email) {
             email = await ask(`請問您的 E-mail 地址？`);
         }
