@@ -143,6 +143,19 @@ Dockerfile   text eol=lf
 *.min.css -diff
 *.map    -diff
 
+# Lock files（套件鎖定檔案：自動產生，無需詳細 diff）
+package-lock.json -diff
+yarn.lock         -diff
+pnpm-lock.yaml    -diff
+Gemfile.lock      -diff
+composer.lock     -diff
+Cargo.lock        -diff
+poetry.lock       -diff
+Pipfile.lock      -diff
+pubspec.lock      -diff
+go.sum            -diff
+packages.lock.json -diff
+
 # --- 選用：Git LFS（如已啟用，再解除註解） ---
 #*.psd filter=lfs diff=lfs merge=lfs -text
 #*.mp4 filter=lfs diff=lfs merge=lfs -text
