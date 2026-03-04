@@ -1,65 +1,77 @@
 #!/usr/bin/env node
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = require("child_process");
-const fs_1 = require("fs");
-const os_1 = require("os");
-const readline_1 = require("readline");
-const util_1 = require("util");
-const ac_1 = require("./aliases/ac");
-const exec = (0, util_1.promisify)(child_process_1.exec);
-const os = (0, os_1.platform)();
-function readKey() {
+
+import { exec as execCallback } from 'child_process';
+import { existsSync } from 'fs';
+import { platform } from 'os';
+import { createInterface } from 'readline';
+import { promisify } from 'util';
+import { buildAliasAc, buildAliasUndo } from './aliases/ac';
+
+const exec = promisify(execCallback);
+const os = platform();
+
+type AskFn = (subject: string) => Promise<string>;
+
+function readKey(): Promise<string> {
     return new Promise((resolve) => {
-        var _a;
         const stdin = process.stdin;
-        const wasRaw = (_a = stdin.isRaw) !== null && _a !== void 0 ? _a : false;
+        const wasRaw = stdin.isRaw ?? false;
+
         if (stdin.setRawMode) {
             stdin.setRawMode(true);
         }
         stdin.resume();
-        stdin.once('data', (data) => {
+        stdin.once('data', (data: Buffer) => {
             if (stdin.setRawMode) {
                 stdin.setRawMode(wasRaw);
             }
             stdin.pause();
+
             // Handle Ctrl+C
             if (data[0] === 3) {
                 console.log('\n已取消');
                 process.exit(0);
             }
+
             // Handle 'q' key to quit
             if (data.toString().toLowerCase() === 'q') {
                 console.log();
                 console.log('已取消');
                 process.exit(0);
             }
+
             resolve(data.toString());
         });
     });
 }
-function escapeForSingleQuotes(value) {
+
+function escapeForSingleQuotes(value: string): string {
     return value.replace(/'/g, '\'\\\'\'');
 }
-function buildAttributesAlias(content) {
+
+function buildAttributesAlias(content: string): string {
     const normalized = content.replace(/\r\n/g, '\n').replace(/\n$/, '');
     const lines = normalized.split('\n');
     const args = lines.map((line) => `'${escapeForSingleQuotes(line)}'`).join(' ');
     return `!f() { printf '%s\\n' ${args}; }; f`;
 }
+
 (async function main() {
-    const readline = (0, readline_1.createInterface)({
+    const readline = createInterface({
         input: process.stdin,
         output: process.stdout
     });
-    const ask = (subject) => new Promise((resolve) => {
+
+    const ask: AskFn = (subject: string) => new Promise((resolve) => {
         readline.question(`${subject} `, (ans) => { resolve(ans); });
     });
+
     // Parse command line arguments
     const args = process.argv.slice(2);
     let name = '';
     let email = '';
     let interactive = false;
+
     // Handle help flag
     if (args.includes('--help') || args.includes('-h')) {
         console.log(`
@@ -74,82 +86,92 @@ Options:
 `);
         process.exit(0);
     }
+
     // Handle version flag
     if (args.includes('--version') || args.includes('-v')) {
-        const pkg = require('../package.json');
+        const pkg = require('../package.json') as { version: string };
         console.log(`v${pkg.version}`);
         process.exit(0);
     }
+
     // Check for --name and --email arguments
     for (let i = 0; i < args.length; i++) {
         if (args[i] === '--name' && i + 1 < args.length) {
             name = args[i + 1];
             i++; // Skip the next argument as it's the value
-        }
-        else if (args[i] === '--email' && i + 1 < args.length) {
+        } else if (args[i] === '--email' && i + 1 < args.length) {
             email = args[i + 1];
             i++; // Skip the next argument as it's the value
-        }
-        else if (args[i] === '--interactive' || args[i] === '-i') {
+        } else if (args[i] === '--interactive' || args[i] === '-i') {
             interactive = true;
         }
     }
+
     // If arguments were not provided, prompt for them
     if (!name || !email) {
         console.log('以下將會協助你進行 Git 版控環境設定：');
         console.log();
+
         // Read current Git user.name and user.email
         let currentName = '';
         let currentEmail = '';
         try {
             const { stdout: nameStdout } = await exec('git config --global user.name');
             currentName = String(nameStdout).trim();
-        }
-        catch (err) {
+        } catch (err) {
             // Ignore error if not set
         }
         try {
             const { stdout: emailStdout } = await exec('git config --global user.email');
             currentEmail = String(emailStdout).trim();
-        }
-        catch (err) {
+        } catch (err) {
             // Ignore error if not set
         }
+
         if (!name) {
             const namePrompt = currentName ? `請問您的顯示名稱？ [${currentName}]` : '請問您的顯示名稱？';
             const input = await ask(namePrompt);
             name = input.trim() || currentName;
         }
+
         if (!email) {
             const emailPrompt = currentEmail ? `請問您的 E-mail 地址？ [${currentEmail}]` : '請問您的 E-mail 地址？';
             const input = await ask(emailPrompt);
             email = input.trim() || currentEmail;
         }
     }
+
     if (!name) {
         console.error('You MUST configure user.name setting!');
         readline.close();
         return;
     }
+
     if (!validateEmail(email)) {
         console.error('You MUST configure user.email setting!');
         readline.close();
         return;
     }
+
     console.log();
     console.log('開始進行 Git 環境設定');
     console.log('------------------------------------------');
+
     await cmd(`git config --global user.name  ${name}`);
     await cmd(`git config --global user.email  ${email}`);
+
     await cmdWithConfirm('git config --global help.autocorrect 30', interactive, ask);
     await cmdWithConfirm('git config --global push.autoSetupRemote true', interactive, ask);
+
     await cmdWithConfirm('git config --global init.defaultBranch main', interactive, ask);
     await cmdWithConfirm('git config --global core.autocrlf input', interactive, ask);
     await cmdWithConfirm('git config --global core.safecrlf false', interactive, ask);
     await cmdWithConfirm('git config --global core.quotepath false', interactive, ask);
+
     await cmdWithConfirm('git config --global color.diff auto', interactive, ask);
     await cmdWithConfirm('git config --global color.status auto', interactive, ask);
     await cmdWithConfirm('git config --global color.branch auto', interactive, ask);
+
     await cmdWithConfirm('git config --global alias.ci   commit', interactive, ask);
     await cmdWithConfirm('git config --global alias.cm   "commit --amend -C HEAD"', interactive, ask);
     await cmdWithConfirm('git config --global alias.co   checkout', interactive, ask);
@@ -165,6 +187,7 @@ Options:
     await cmdWithConfirm('git config --global alias.ll   "log --pretty=format:\'%h %ad | %s%d [%Cgreen%an%Creset]\' --graph --date=short"', interactive, ask);
     await cmdWithConfirm('git config --global alias.lg   "log --graph --pretty=format:\'%Cred%h%Creset %ad |%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset [%Cgreen%an%Creset]\' --abbrev-commit --date=short"', interactive, ask);
     await cmdWithConfirm('git config --global alias.alias "config --get-regexp ^alias\\."', interactive, ask);
+
     // --- add: alias.attributes (cross-platform) ---
     const gitattributesContent = `# --- 基本：自動偵測文字檔並正規化至 LF ---
 * text=auto
@@ -322,88 +345,94 @@ Dockerfile   text eol=lf
 #/.gitattributes export-ignore
 #/.editorconfig  export-ignore
 `;
+
     const aliasAttributes = buildAttributesAlias(gitattributesContent);
+
     if (os === 'win32') {
         await cmdWithConfirm(`git config --global alias.attributes "${aliasAttributes.replace(/"/g, '\\"')}"`, interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm(`git config --global alias.attributes '${escapeForSingleQuotes(aliasAttributes)}'`, interactive, ask);
     }
+
     // --- add: alias.ac / alias.undo (cross-platform) ---
-    const aliasAc = (0, ac_1.buildAliasAc)();
-    const aliasUndo = (0, ac_1.buildAliasUndo)();
+    const aliasAc = buildAliasAc();
+    const aliasUndo = buildAliasUndo();
+
     if (os === 'win32') {
         await cmdWithConfirm(`git config --global alias.ac "${aliasAc.replace(/"/g, '\\"')}"`, interactive, ask);
         await cmdWithConfirm(`git config --global alias.undo "${aliasUndo.replace(/"/g, '\\"')}"`, interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm(`git config --global alias.ac '${escapeForSingleQuotes(aliasAc)}'`, interactive, ask);
         await cmdWithConfirm(`git config --global alias.undo '${escapeForSingleQuotes(aliasUndo)}'`, interactive, ask);
     }
+
     // git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
     if (os === 'win32') {
         await cmdWithConfirm('git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"', interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm('git config --global alias.ignore \'!\'"gi() { curl -sL https://www.gitignore.io/api/\\$@ ;}; gi"', interactive, ask);
     }
+
     // git config --global alias.iac  "!giac() { git init && git add . && git commit -m 'Initial commit' ;}; giac"
     if (os === 'win32') {
         await cmdWithConfirm('git config --global alias.iac "!giac() { git init -b main && git add . && git commit -m \'Initial commit\' ;}; giac"', interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm('git config --global alias.iac \'!\'"giac() { git init -b main && git add . && git commit -m \'Initial commit\' ;}; giac"', interactive, ask);
     }
+
     // git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
     if (os === 'win32') {
         await cmdWithConfirm('git config --global alias.cc "!grcc() { git reset --hard && git clean -fdx ;}; read -p \'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) \' answer && [[ $answer == [Yy] ]] && grcc"', interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm('git config --global alias.cc \'!\'"grcc() { git reset --hard && git clean -fdx ;}; read -p \'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) \' answer && [[ $answer == [Yy] ]] && grcc"', interactive, ask);
     }
+
     // git config --global alias.acp "!gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
     if (os === 'win32') {
         await cmdWithConfirm('git config --global alias.acp "!gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"', interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm('git config --global alias.acp \'!\'"gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"', interactive, ask);
     }
+
     // git config --global alias.aca "!gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
     if (os === 'win32') {
         await cmdWithConfirm('git config --global alias.aca "!gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"', interactive, ask);
-    }
-    else {
+    } else {
         await cmdWithConfirm('git config --global alias.aca \'!\'"gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"', interactive, ask);
     }
-    if (os === 'win32' && (0, fs_1.existsSync)('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {
+
+    if (os === 'win32' && existsSync('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {
         await cmdWithConfirm('git config --global alias.tlog "!start \'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe\' /command:log /path:."', interactive, ask);
     }
+
     if (os === 'win32') {
         await cmdWithConfirm('git config --global core.editor notepad', interactive, ask);
     }
+
     if (!process.env.LC_ALL) {
         if (os === 'win32') {
             await cmd('SETX LC_ALL C.UTF-8');
             console.log('請重新啟動應用程式或命令提示字元以讓環境變數生效！');
-        }
-        else {
+        } else {
             console.log('BE REMEMBER SETUP THE FOLLOWING ENVIRONMENT VARIABLE:');
             console.warn('export LC_ALL=C.UTF-8');
         }
     }
+
     if (!process.env.LANG) {
         if (os === 'win32') {
             await cmd('SETX LANG C.UTF-8');
             console.log('請重新啟動應用程式或命令提示字元以讓環境變數生效！');
-        }
-        else {
+        } else {
             console.log('BE REMEMBER SETUP THE FOLLOWING ENVIRONMENT VARIABLE:');
             console.warn('export LANG=C.UTF-8');
         }
     }
+
     readline.close();
 })();
-async function cmd(command) {
+
+async function cmd(command: string): Promise<void> {
     console.log(command);
     const { stdout, stderr } = await exec(command);
     if (stderr) {
@@ -414,11 +443,13 @@ async function cmd(command) {
         console.log(String(stdout));
     }
 }
-function validateEmail(email) {
+
+function validateEmail(email: string): boolean {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
-async function cmdWithConfirm(command, interactive, ask) {
+
+async function cmdWithConfirm(command: string, interactive: boolean, ask: AskFn): Promise<void> {
     if (interactive) {
         process.stdout.write(`執行此命令嗎？ ${command} (y/n/q): `);
         const key = await readKey();

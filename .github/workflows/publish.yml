@@ -21,5 +21,15 @@ jobs:
       # Ensure npm 11.5.1 or later is installed
       - name: Update npm
         run: npm install -g npm@latest
-      - run: npm publish
-
+      - name: Install dependencies
+        run: npm ci
+      - name: Build package
+        run: npm run build
+      - name: Prepare publish artifacts
+        run: |
+          rm -rf .publish
+          mkdir -p .publish
+          find bin -type f -name '*.js' -exec cp --parents {} .publish \;
+          cp package.json README.md LICENSE .publish/
+          node -e "const fs=require('node:fs');const pkgPath='.publish/package.json';const pkg=JSON.parse(fs.readFileSync(pkgPath,'utf8'));delete pkg.devDependencies;delete pkg.scripts;pkg.files=['bin/**/*.js'];fs.writeFileSync(pkgPath,JSON.stringify(pkg,null,2)+'\n');"
+      - run: npm publish ./.publish --provenance --access public

@@ -6,7 +6,8 @@
     "git-setup": "bin/index.js"
   },
   "scripts": {
-    "start": "node bin/index.js",
+    "build": "tsc -p tsconfig.json",
+    "start": "npm run build && node bin/index.js",
     "bump": "npm version patch --no-git-tag-version && npm install --package-lock-only"
   },
   "repository": {
@@ -26,5 +27,9 @@
   ],
   "homepage": "https://github.com/doggy8088/git-setup",
   "author": "Will 保哥",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
+  }
 }
