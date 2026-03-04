@@ -58,7 +58,7 @@ function buildAliasAc() {
         'if [ -n "$excluded_sections" ]; then prompt=$(printf "%s\\n%s\\n\\n%s" "以下為排除檔案（僅列檔名/路徑，不含內容）:" "$excluded_sections" "$diff"); else prompt="$diff"; fi',
         'char_count=$(printf "%s" "$prompt" | wc -c)',
         'if [ "$char_count" -gt 150000 ]; then echo "變更內容過大（超過 150,000 字元），無法產生變更摘要。請考慮將變更拆分為多個較小的 commit。"; exit 0; fi',
-        'msg=$(printf "%s" "$prompt" | aichat "依據 diff 產生高解析度、技術導向、精準且簡潔的繁體中文 Git commit 訊息。採用 Conventional Commits 1.0.0 格式撰寫。不得包含多餘語句，只輸出 commit title 與必要的 body。")',
+        'msg=$(printf "%s" "$prompt" | aichat "依據 diff 產生高解析度、技術導向、精準且簡潔的繁體中文 Git commit 訊息。採用 Conventional Commits 1.0.0 格式撰寫。輸出限制：只可輸出純文字 commit 訊息，不得使用 Markdown、不可以程式碼區塊呈現（禁止輸出 ```）、不得加入前言或結語。第一行必須是 commit title；若需要 body，請在下一行空一行後再開始。")',
         'git commit -m "$msg" && git --no-pager log -1'
     ];
     return `!f() { ${commands.join('; ')}; }; f`;
