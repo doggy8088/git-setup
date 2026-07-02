@@ -1,11 +1,42 @@
 # @willh/git-setup
 
+## 1.4.7
+
+- Add `git liac` alias for initializing a repository with `--separate-git-dir` under `~/.git-repos`
+- Add fallback from `md5` to `md5sum` for environments without the `md5` command
+
+## 1.4.6
+
+- Improve `git ac` diff filtering and commit message generation prompts
+- Add project-level `AGENTS.md` instructions for repository-specific Codex behavior
+
+## 1.4.5
+
+- Change `core.safecrlf` default from `true` to `false` to reduce cross-platform line ending blocks
+- Improve `.gitattributes` alias generation and quoting behavior
+- Update README guidance for line ending configuration
+
+## 1.4.4
+
+- Add `push.autoSetupRemote` global Git configuration
+- Update README documentation for automatic upstream setup on first push
+
 ## 1.4.3
 
 - Add `git ac` for generating commit messages using AIChat with improved diff filtering:
   - Exclude minified files from diff analysis (*.min.js, *.min.css, *.min.*.js, *.min.*.css, *-min.js, *-min.css, *.bundle.js, *.bundle.min.js)
   - Exclude binary files from diff using `--diff-filter=d` flag
   - Add informative error messages when diff is too large or contains only excluded files
+
+## 1.4.2
+
+- Add lock file exclusions to `git ac` diff analysis
+- Update README documentation for lock file exclusion behavior
+
+## 1.4.1
+
+- Update `git ac` to list excluded and included files before AI analysis
+- Display deleted files, minified files, and analyzed files separately
 
 ## 1.4.0
 

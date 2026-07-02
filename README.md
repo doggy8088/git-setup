@@ -85,6 +85,7 @@ git config --global alias.alias "config --get-regexp ^alias\."
 # 必須是 Windows 平台才會執行以下設定
 git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
 git config --global alias.iac "!giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
+git config --global alias.liac "!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); mkdir -p ~/.git-repos && git init --separate-git-dir ~/.git-repos/\"$hash\" && cd \"$(pwd)\" ;}; gliac"
 git config --global alias.acp "!gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
 git config --global alias.aca "!gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
 git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
@@ -92,6 +93,7 @@ git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; 
 # 必須是 Linux/macOS 平台才會執行以下設定
 git config --global alias.ignore '!'"gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
 git config --global alias.iac '!'"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
+git config --global alias.liac '!'"gliac() { hash=\$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print \$1}'; fi; }); mkdir -p ~/.git-repos && git init --separate-git-dir ~/.git-repos/\"\$hash\" && cd \"\$(pwd)\" ;}; gliac"
 git config --global alias.acp '!'"gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
 git config --global alias.aca '!'"gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
 git config --global alias.cc  '!'"grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
@@ -197,7 +199,22 @@ git config --global core.editor notepad
     - 保留所有檔案變更 (變更會回到 unstaged 狀態)
     - 適合用於修正 commit 訊息或重新整理變更
 
-6. `alias.attributes` - 顯示建議的 .gitattributes 檔案內容
+6. `alias.liac` - 使用分離 Git 目錄初始化目前目錄
+
+    此工具會自動設定 `git liac` 命令,可在目前目錄初始化 Git repository,並將實際 Git 目錄放在 `~/.git-repos/` 底下:
+
+    ```sh
+    git liac
+    ```
+
+    這個命令會:
+    - 建立 `~/.git-repos` 目錄
+    - 以目前路徑的雜湊值作為分離 Git 目錄名稱
+    - 執行 `git init --separate-git-dir ~/.git-repos/<hash>`
+
+    macOS 會使用 `md5` 產生雜湊值; 若環境沒有 `md5`,會改用 `md5sum`。
+
+7. `alias.attributes` - 顯示建議的 .gitattributes 檔案內容
 
     此工具會自動設定 `git attributes` 命令,可快速查看本工具建議的 `.gitattributes` 檔案內容:
 
