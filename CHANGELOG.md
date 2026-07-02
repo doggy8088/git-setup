@@ -1,5 +1,9 @@
 # @willh/git-setup
 
+## 1.4.8
+
+- Update `git liac` to write the original working tree path into `~/.git-repos/<path-hash>/WORKING_TREE_PATH`
+
 ## 1.4.7
 
 - Add `git liac` alias for initializing a repository with `--separate-git-dir` under `~/.git-repos`

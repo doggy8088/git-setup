@@ -368,8 +368,8 @@ Dockerfile   text eol=lf
         await cmdWithConfirm("git config --global alias.iac '!'\"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"", interactive, ask);
     }
 
-    // git config --global alias.liac  "!gliac() { mkdir -p ~/.git-repos && git init --separate-git-dir ~/.git-repos/\"$(pwd | md5)\" && cd \"$(pwd)\" ;}; gliac"
-    const aliasLiac = `!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); mkdir -p ~/.git-repos && git init --separate-git-dir ~/.git-repos/"$hash" && cd "$(pwd)" ;}; gliac`;
+    // git config --global alias.liac  "!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo=$HOME/.git-repos/$hash && mkdir -p \"$repo\" && printf '%s\n' \"$(pwd)\" > \"$repo/WORKING_TREE_PATH\" && git init --separate-git-dir \"$repo\" && cd \"$(pwd)\" ;}; gliac"
+    const aliasLiac = `!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo="${HOME}/.git-repos/$hash"; mkdir -p "$repo"; printf '%s\n' "$(pwd)" > "$repo/WORKING_TREE_PATH"; git init --separate-git-dir "$repo" && cd "$(pwd)" ;}; gliac`;
     if (os === 'win32') {
         await cmdWithConfirm(`git config --global alias.liac "${aliasLiac.replace(/"/g, '\\"')}"`, interactive, ask);
     } else {
