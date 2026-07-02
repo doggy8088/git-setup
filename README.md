@@ -232,6 +232,49 @@ git config --global core.editor notepad
 - `make status`：查看 git 變更狀態
 - `make version`：顯示目前套件版本
 
+### 發佈流程
+
+**目前發佈流程採用「版號變更 → 推送 master」的自動觸發，並由 GitHub Actions 進行版本檢查後決定是否執行 `npm publish`。**
+
+目前有兩種觸發方式：
+
+- 自動流程：`master` 分支上 `package.json` 有變更時推送
+- 手動流程：在 GitHub Actions 使用 `Run workflow` 觸發 `workflow_dispatch`
+
+流程如下：
+
+```mermaid
+flowchart TD
+    A([開始]) --> B["更新版本<br/>修改 package.json version"]
+    B --> C["提交並推送<br/>git push origin master"]
+    C --> D{發佈工作流程觸發}
+    D -->|push 事件| E{package.json 是否有變更}
+    D -->|workflow_dispatch| F[將版本變更標記為 true]
+    E --> G{版本是否變更}
+    G -->|是| H[npm publish<br/>使用 GitHub OIDC]
+    G -->|否| I[跳過 publish]
+    F --> H
+    H --> J[完成 npm 發佈]
+    I --> K([流程結束])
+    J --> K
+
+    classDef normal fill:#87CEEB,stroke:#333,stroke-width:2px,color:#003366
+    classDef decision fill:#90EE90,stroke:#333,stroke-width:2px,color:#064420
+    classDef finish fill:#E6E6FA,stroke:#333,stroke-width:2px,color:#1F1F1F
+
+    class A,B,C,H,J,K normal
+    class D,E,G decision
+    class I finish
+```
+
+**關鍵檢查點**
+
+- `.github/workflows/publish.yml` 會檢查版本是否變更；未變更時流程結束，不會 publish。
+- `npm publish` 在 CI 中會先執行 `prepublishOnly`，會自動觸發 `npm run build`，產生最新 `dist/alias-ac.min.sh`。
+- 流程使用 `permissions.id-token: write`，採用 Trusted Publishing，不需手動設定 `NPM_TOKEN`。
+- `workflow_dispatch` 會直接發佈（跳過版本比較），供臨時手動發佈使用。
+- `PUBLISH.md` 仍保留手動發佈備援：`npm publish --provenance --access public`。
+
 7. `alias.attributes` - 顯示建議的 .gitattributes 檔案內容
 
     此工具會自動設定 `git attributes` 命令,可快速查看本工具建議的 `.gitattributes` 檔案內容:

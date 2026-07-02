@@ -1,5 +1,10 @@
 # @willh/git-setup
 
+## 1.5.0
+
+- Add `prepublishOnly` lifecycle to ensure `dist/alias-ac.min.sh` is rebuilt before every `npm publish`.
+- Clarify publish flow in release docs (`README.md`, `PUBLISH.md`) to include publish-time build steps.
+
 ## 1.4.9
 
 - Add `git liac` to write working tree original path to `~/.git-repos/<path-hash>/OriginalWorkingTreePath` (PascalCase filename)

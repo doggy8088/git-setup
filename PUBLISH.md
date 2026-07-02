@@ -16,7 +16,9 @@
     git push origin master
     ```
 
-3. GitHub Actions 會自動執行發佈流程
+3. `npm publish` 會先跑 `prepublishOnly`，即執行 `npm run build`（建置 `dist/alias-ac.min.sh`）。
+
+4. GitHub Actions 會自動執行發佈流程
 
 ## 手動發佈
 
