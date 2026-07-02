@@ -4,6 +4,8 @@ on:
  push:
    branches:
      - master
+   paths:
+     - 'package.json'
  workflow_dispatch:
 
 jobs:
@@ -13,12 +15,46 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-      # Ensure npm 11.5.1 or later is installed
-      - name: Update npm
-        run: npm install -g npm@latest
-      - run: npm publish
+      - name: Check if package version changed
+        id: version_check
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          PREV_SHA="${{ github.event.before }}"
+          if [ "$PREV_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "No previous commit found. Publishing as a one-time bootstrap case."
+            exit 0
+          fi
+
+          if ! git cat-file -e "$PREV_SHA:package.json"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "Previous package.json unavailable. Publishing to avoid false negative."
+            exit 0
+          fi
+
+          PREV_VERSION=$(git show "$PREV_SHA:package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+          CUR_VERSION=$(node -p "JSON.parse(require('fs').readFileSync('package.json', 'utf8')).version")
+          echo "previous version: $PREV_VERSION"
+          echo "current version: $CUR_VERSION"
+
+          if [ "$PREV_VERSION" != "$CUR_VERSION" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish to NPM
+        if: steps.version_check.outputs.changed == 'true'
+        run: npm publish
