@@ -4,6 +4,7 @@ const util = require('util');
 const exec = util.promisify(require('child_process').exec);
 const os = require('os').platform();
 const fs = require('fs');
+const path = require('path');
 
 // Function to read single keypress
 function readKey() {
@@ -176,6 +177,49 @@ Options:
         return `!f() { printf '%s\\n' ${args}; }; f`;
     }
 
+    function buildMinifiedAliasCommand(sourceScript) {
+        const lines = sourceScript
+            .replace(/^\uFEFF/, '')
+            .replace(/\r\n?/g, '\n')
+            .split('\n')
+            .map((line) => {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed.startsWith('#')) {
+                    return '';
+                }
+                return trimmed.replace(/\s+/g, ' ');
+            })
+            .filter(Boolean)
+            .map((line) => {
+                if (line.endsWith(';')) {
+                    return line;
+                }
+                return `${line};`;
+            });
+
+        const body = lines.join(' ');
+        if (!body) {
+            return '';
+        }
+
+        return `!f() { ${body} }; f`;
+    }
+
+    function loadAliasAcScript() {
+        const distPath = path.join(__dirname, '../dist/alias-ac.min.sh');
+        const sourcePath = path.join(__dirname, '../scripts/alias-ac.full.sh');
+
+        if (fs.existsSync(distPath)) {
+            const distScript = fs.readFileSync(distPath, 'utf8').trim();
+            if (distScript) {
+                return distScript;
+            }
+        }
+
+        const sourceScript = fs.readFileSync(sourcePath, 'utf8');
+        return buildMinifiedAliasCommand(sourceScript);
+    }
+
     // --- add: alias.attributes (cross-platform) ---
     const gitattributesContent = `# --- 基本：自動偵測文字檔並正規化至 LF ---
 * text=auto
@@ -343,16 +387,21 @@ Dockerfile   text eol=lf
     }
 
     // --- add: alias.ac / alias.undo (cross-platform) ---
-    const aliasAc = `!f() { if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then exit 0; fi; if ! command -v aichat >/dev/null 2>&1; then exit 0; fi; if git diff --cached --quiet; then if git diff --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then exit 0; fi; git add -A; fi; deleted=$(git diff --cached --diff-filter=D --name-status | awk '{print $2}'); minified=$(git diff --cached --diff-filter=d --name-only | grep -E '\\.(min\\.js|min\\.css|min\\..+\\.js|min\\..+\\.css|-min\\.js|-min\\.css|bundle\\.js|bundle\\.min\\.js)$' || true); lockfiles=$(git diff --cached --diff-filter=d --name-only | grep -E '(package-lock\\.json|yarn\\.lock|pnpm-lock\\.yaml|bun\\.lockb|Bun\\.lock|Gemfile\\.lock|Cargo\\.lock|composer\\.lock|Podfile\\.lock|poetry\\.lock|Pipfile\\.lock|packages\\.lock\\.json|pubspec\\.lock|mix\\.lock|go\\.sum)$' || true); if [ -n "$deleted" ]; then echo "已排除刪除的檔案:"; echo "$deleted" | sed 's/^/  D /'; echo ""; fi; if [ -n "$minified" ]; then echo "已排除壓縮檔案:"; echo "$minified" | sed 's/^/  M /'; echo ""; fi; if [ -n "$lockfiles" ]; then echo "已排除 lock 檔案:"; echo "$lockfiles" | sed 's/^/  L /'; echo ""; fi; included=$(git diff --cached --diff-filter=d --name-status ':(exclude)*.min.js' ':(exclude)*.min.css' ':(exclude)*.min.*.js' ':(exclude)*.min.*.css' ':(exclude)*-min.js' ':(exclude)*-min.css' ':(exclude)*.bundle.js' ':(exclude)*.bundle.min.js' ':(exclude)package-lock.json' ':(exclude)yarn.lock' ':(exclude)pnpm-lock.yaml' ':(exclude)bun.lockb' ':(exclude)Bun.lock' ':(exclude)Gemfile.lock' ':(exclude)Cargo.lock' ':(exclude)composer.lock' ':(exclude)Podfile.lock' ':(exclude)poetry.lock' ':(exclude)Pipfile.lock' ':(exclude)packages.lock.json' ':(exclude)pubspec.lock' ':(exclude)mix.lock' ':(exclude)go.sum' | awk '{printf "%s %s\\n", $1, $2}'); if [ -n "$included" ]; then echo "納入 AI 分析的檔案:"; echo "$included" | sed 's/^A /  新增: /' | sed 's/^M /  修改: /' | sed 's/^R[0-9]* /  重新命名: /'; echo ""; fi; excluded_sections=""; if [ -n "$deleted" ]; then deleted_lines=$(printf "%s\\n" "$deleted" | sed 's/^/  /'); if [ -z "$excluded_sections" ]; then excluded_sections=$(printf "%s\\n%s" "刪除的檔案（僅列檔名/路徑）:" "$deleted_lines"); else excluded_sections=$(printf "%s\\n\\n%s\\n%s" "$excluded_sections" "刪除的檔案（僅列檔名/路徑）:" "$deleted_lines"); fi; fi; if [ -n "$minified" ]; then minified_lines=$(printf "%s\\n" "$minified" | sed 's/^/  /'); if [ -z "$excluded_sections" ]; then excluded_sections=$(printf "%s\\n%s" "壓縮檔案（僅列檔名/路徑）:" "$minified_lines"); else excluded_sections=$(printf "%s\\n\\n%s\\n%s" "$excluded_sections" "壓縮檔案（僅列檔名/路徑）:" "$minified_lines"); fi; fi; if [ -n "$lockfiles" ]; then lock_lines=$(printf "%s\\n" "$lockfiles" | sed 's/^/  /'); if [ -z "$excluded_sections" ]; then excluded_sections=$(printf "%s\\n%s" "lock 檔案（僅列檔名/路徑）:" "$lock_lines"); else excluded_sections=$(printf "%s\\n\\n%s\\n%s" "$excluded_sections" "lock 檔案（僅列檔名/路徑）:" "$lock_lines"); fi; fi; diff=$(git diff --cached --diff-filter=d --ignore-all-space ':(exclude)*.min.js' ':(exclude)*.min.css' ':(exclude)*.min.*.js' ':(exclude)*.min.*.css' ':(exclude)*-min.js' ':(exclude)*-min.css' ':(exclude)*.bundle.js' ':(exclude)*.bundle.min.js' ':(exclude)package-lock.json' ':(exclude)yarn.lock' ':(exclude)pnpm-lock.yaml' ':(exclude)bun.lockb' ':(exclude)Bun.lock' ':(exclude)Gemfile.lock' ':(exclude)Cargo.lock' ':(exclude)composer.lock' ':(exclude)Podfile.lock' ':(exclude)poetry.lock' ':(exclude)Pipfile.lock' ':(exclude)packages.lock.json' ':(exclude)pubspec.lock' ':(exclude)mix.lock' ':(exclude)go.sum'); if [ -z "$diff" ] && [ -z "$excluded_sections" ]; then echo "沒有可分析的變更內容（可能全部為二進位檔案或已排除的檔案）"; exit 0; fi; if [ -n "$excluded_sections" ]; then prompt=$(printf "%s\\n%s\\n\\n%s" "以下為排除檔案（僅列檔名/路徑，不含內容）:" "$excluded_sections" "$diff"); else prompt="$diff"; fi; char_count=$(printf "%s" "$prompt" | wc -c); if [ "$char_count" -gt 150000 ]; then echo "變更內容過大（超過 150,000 字元），無法產生變更摘要。請考慮將變更拆分為多個較小的 commit。"; exit 0; fi; msg=$(printf "%s" "$prompt" | aichat "依據 diff 產生高解析度、技術導向、精準且簡潔的繁體中文 Git commit 訊息。採用 Conventional Commits 1.0.0 格式撰寫。不得包含多餘語句，只輸出 commit title 與必要的 body。"); git commit -m "$msg" && git --no-pager log -1; }; f`;
+    const aliasAc = loadAliasAcScript();
     const aliasUndo = `!f() { if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then echo "[undo] skip: not a git repository"; exit 0; fi; echo "[undo] Undo Last Commit: git reset HEAD~"; git reset HEAD~; }; f`;
 
-    if (os === 'win32') {
-        await cmdWithConfirm(`git config --global alias.ac "${aliasAc.replace(/"/g, '\\"')}"`, interactive, ask);
-        await cmdWithConfirm(`git config --global alias.undo "${aliasUndo.replace(/"/g, '\\"')}"`, interactive, ask);
+    if (aliasAc) {
+        if (os === 'win32') {
+            await cmdWithConfirm(`git config --global alias.ac "${aliasAc.replace(/"/g, '\\"')}"`, interactive, ask);
+            await cmdWithConfirm(`git config --global alias.undo "${aliasUndo.replace(/"/g, '\\"')}"`, interactive, ask);
+        } else {
+            await cmdWithConfirm(`git config --global alias.ac '${escapeForSingleQuotes(aliasAc)}'`, interactive, ask);
+            await cmdWithConfirm(`git config --global alias.undo '${escapeForSingleQuotes(aliasUndo)}'`, interactive, ask);
+        }
     } else {
-        await cmdWithConfirm(`git config --global alias.ac '${escapeForSingleQuotes(aliasAc)}'`, interactive, ask);
-        await cmdWithConfirm(`git config --global alias.undo '${escapeForSingleQuotes(aliasUndo)}'`, interactive, ask);
+        console.error('alias.ac 未建立，請先執行 npm run build-ac');
     }
+
 
     // git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
     if (os === 'win32') {
@@ -368,8 +417,8 @@ Dockerfile   text eol=lf
         await cmdWithConfirm("git config --global alias.iac '!'\"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac\"", interactive, ask);
     }
 
-    // git config --global alias.liac  "!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo=$HOME/.git-repos/$hash && mkdir -p \"$repo\" && printf '%s\n' \"$(pwd)\" > \"$repo/WORKING_TREE_PATH\" && git init --separate-git-dir \"$repo\" && cd \"$(pwd)\" ;}; gliac"
-    const aliasLiac = `!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo="${HOME}/.git-repos/$hash"; mkdir -p "$repo"; printf '%s\n' "$(pwd)" > "$repo/WORKING_TREE_PATH"; git init --separate-git-dir "$repo" && cd "$(pwd)" ;}; gliac`;
+    // git config --global alias.liac  "!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo=$HOME/.git-repos/$hash && mkdir -p \"$repo\" && printf '%s\n' \"$(pwd)\" > \"$repo/OriginalWorkingTreePath\" && git init --separate-git-dir \"$repo\" && cd \"$(pwd)\" ;}; gliac"
+    const aliasLiac = `!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo="${HOME}/.git-repos/$hash"; mkdir -p "$repo"; printf '%s\n' "$(pwd)" > "$repo/OriginalWorkingTreePath"; git init --separate-git-dir "$repo" && cd "$(pwd)" ;}; gliac`;
     if (os === 'win32') {
         await cmdWithConfirm(`git config --global alias.liac "${aliasLiac.replace(/"/g, '\\"')}"`, interactive, ask);
     } else {

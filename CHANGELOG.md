@@ -1,5 +1,12 @@
 # @willh/git-setup
 
+## 1.4.9
+
+- Add `git liac` to write working tree original path to `~/.git-repos/<path-hash>/OriginalWorkingTreePath` (PascalCase filename)
+- Refactor `git ac` implementation into `scripts/alias-ac.full.sh` with `scripts/build-ac.js` minified output and cross-platform loading
+- Add fallback commit strategy when diff output is too large: generate commit message from file list and stat summary
+- Add `Makefile` for common project management commands and hook up `build-ac` scripts in `package.json`
+
 ## 1.4.8
 
 - Update `git liac` to write the original working tree path into `~/.git-repos/<path-hash>/WORKING_TREE_PATH`

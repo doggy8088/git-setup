@@ -85,7 +85,7 @@ git config --global alias.alias "config --get-regexp ^alias\."
 # 必須是 Windows 平台才會執行以下設定
 git config --global alias.ignore "!gi() { curl -sL https://www.gitignore.io/api/$@ ;}; gi"
 git config --global alias.iac "!giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
-git config --global alias.liac "!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo=\"$HOME/.git-repos/$hash\"; mkdir -p \"$repo\" && printf '%s\n' \"$(pwd)\" > \"$repo/WORKING_TREE_PATH\" && git init --separate-git-dir \"$repo\" && cd \"$(pwd)\" ;}; gliac"
+git config --global alias.liac "!gliac() { hash=$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print $1}'; fi; }); repo=\"$HOME/.git-repos/$hash\"; mkdir -p \"$repo\" && printf '%s\n' \"$(pwd)\" > \"$repo/OriginalWorkingTreePath\" && git init --separate-git-dir \"$repo\" && cd \"$(pwd)\" ;}; gliac"
 git config --global alias.acp "!gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
 git config --global alias.aca "!gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
 git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
@@ -93,7 +93,7 @@ git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; 
 # 必須是 Linux/macOS 平台才會執行以下設定
 git config --global alias.ignore '!'"gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
 git config --global alias.iac '!'"giac() { git init -b main && git add . && git commit -m 'Initial commit' ;}; giac"
-git config --global alias.liac '!'"gliac() { hash=\$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print \$1}'; fi; }); repo=\"\$HOME/.git-repos/\$hash\"; mkdir -p \"\$repo\" && printf '%s\n' \"\$(pwd)\" > \"\$repo/WORKING_TREE_PATH\" && git init --separate-git-dir \"\$repo\" && cd \"\$(pwd)\" ;}; gliac"
+git config --global alias.liac '!'"gliac() { hash=\$(pwd | { if command -v md5 >/dev/null 2>&1; then md5; else md5sum | awk '{print \$1}'; fi; }); repo=\"\$HOME/.git-repos/\$hash\"; mkdir -p \"\$repo\" && printf '%s\n' \"\$(pwd)\" > \"\$repo/OriginalWorkingTreePath\" && git init --separate-git-dir \"\$repo\" && cd \"\$(pwd)\" ;}; gliac"
 git config --global alias.acp '!'"gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
 git config --global alias.aca '!'"gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
 git config --global alias.cc  '!'"grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
@@ -168,11 +168,14 @@ git config --global core.editor notepad
 
     此工具會自動設定 `git ac` 命令,當你的工作目錄有變更時,它會:
     - 自動偵測是否有已暫存 (staged) 的變更,若無則自動執行 `git add -A`
+    - 以 `scripts/alias-ac.full.sh` 作為主要實作來源，並透過 `scripts/build-ac.js` 壓縮為 `dist/alias-ac.min.sh` 嵌入 alias
     - 顯示已排除的檔案清單（刪除的檔案、壓縮檔案、lock 檔案）
     - 顯示納入 AI 分析的檔案清單（新增、修改、重新命名的檔案）
     - 呼叫 `aichat` 工具分析 diff 內容
     - 使用 AI 產生符合 Conventional Commits 1.0.0 格式的繁體中文 commit 訊息
     - 自動執行 commit 並顯示最近一次的 commit log
+
+    當變更檔案內容過長時，會改用「精簡上下文」策略：改送出變更檔案清單與統計資料給 aichat，降低輸入量並保證可順利產生 commit。
 
     **前置需求**: 需要先安裝 [aichat](https://github.com/sigoden/aichat) 命令列工具
 
@@ -211,9 +214,23 @@ git config --global core.editor notepad
     - 建立 `~/.git-repos` 目錄
     - 以目前路徑的雜湊值作為分離 Git 目錄名稱
     - 執行 `git init --separate-git-dir ~/.git-repos/<hash>`
-    - 建立 `WORKING_TREE_PATH` 檔案，內容為工作目錄的原始完整路徑
+    - 建立 `OriginalWorkingTreePath` 檔案，內容為工作目錄的原始完整路徑
 
     macOS 會使用 `md5` 產生雜湊值; 若環境沒有 `md5`,會改用 `md5sum`。
+
+## Makefile 指令
+
+本專案新增 `Makefile`，可集中管理常用指令：
+
+- `make help`：顯示可用指令
+- `make install`：安裝依賴套件
+- `make start`：執行 CLI（相當於 `npm run start`）
+- `make build`：建置 `git ac` 壓縮腳本到 `dist/alias-ac.min.sh`
+- `make build-ac`：直接執行 `npm run build-ac`
+- `make bump`：執行 patch 版號遞增並更新 `package-lock.json`
+- `make clean`：移除建置輸出
+- `make status`：查看 git 變更狀態
+- `make version`：顯示目前套件版本
 
 7. `alias.attributes` - 顯示建議的 .gitattributes 檔案內容
 
