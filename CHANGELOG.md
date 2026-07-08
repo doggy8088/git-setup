@@ -1,5 +1,9 @@
 # @willh/git-setup
 
+## 1.5.1
+
+- 修正 `git liac` alias 漏掉 `git add . && git commit -m 'Initial commit'` 的問題，使其行為與 `git iac` 一致（差別僅在使用 `--separate-git-dir`）
+
 ## 1.5.0
 
 - Add `prepublishOnly` lifecycle to ensure `dist/alias-ac.min.sh` is rebuilt before every `npm publish`.
