@@ -1,5 +1,11 @@
 # @willh/git-setup
 
+## 1.5.3
+
+- 修正 `git ac` 精簡流程中對 `git diff --stat` 的參數順序，避免出現 `fatal: option '--stat' must come before non-option arguments`。
+- 調整 `git ac` 構建壓縮腳本的分號補上邏輯，避免輸出 `then;`、`fi if` 等壞掉的控制流程語法。
+- 將版本更新為 `1.5.3`，同步更新 `package.json` 與 `package-lock.json`。
+
 ## 1.5.2
 
 - 修正 `git liac` alias 中 `${HOME}` 被 JavaScript template literal 錯誤插值（`ReferenceError: HOME is not defined`）的問題，改為 `$HOME`（shell 在執行期才展開，JS 不插值）
