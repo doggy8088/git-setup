@@ -1,5 +1,9 @@
 # @willh/git-setup
 
+## 1.5.2
+
+- 修正 `git liac` alias 中 `${HOME}` 被 JavaScript template literal 錯誤插值（`ReferenceError: HOME is not defined`）的問題，改為 `$HOME`（shell 在執行期才展開，JS 不插值）
+
 ## 1.5.1
 
 - 修正 `git liac` alias 漏掉 `git add . && git commit -m 'Initial commit'` 的問題，使其行為與 `git iac` 一致（差別僅在使用 `--separate-git-dir`）
