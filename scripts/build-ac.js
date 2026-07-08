@@ -8,6 +8,13 @@ const distDir = path.join(__dirname, '..', 'dist');
 const distPath = path.join(distDir, 'alias-ac.min.sh');
 
 function minifyShellAlias(source) {
+    const skipSemicolonTokens = new Set(['then', 'do', 'else', 'in']);
+    const shouldSkipSemicolon = (line) => {
+        const tokens = line.trim().split(/\s+/);
+        const last = tokens[tokens.length - 1];
+        return skipSemicolonTokens.has(last);
+    };
+
     const lines = source
         .replace(/^\uFEFF/, '')
         .replace(/\r\n?/g, '\n')
@@ -25,7 +32,7 @@ function minifyShellAlias(source) {
         })
         .filter(Boolean)
         .map((line) => {
-            if (line.endsWith(';')) {
+            if (line.endsWith(';') || shouldSkipSemicolon(line)) {
                 return line;
             }
             return `${line};`;

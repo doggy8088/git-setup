@@ -178,6 +178,13 @@ Options:
     }
 
     function buildMinifiedAliasCommand(sourceScript) {
+        const skipSemicolonTokens = new Set(['then', 'do', 'else', 'in']);
+        const shouldSkipSemicolon = (line) => {
+            const tokens = line.trim().split(/\s+/);
+            const last = tokens[tokens.length - 1];
+            return skipSemicolonTokens.has(last);
+        };
+
         const lines = sourceScript
             .replace(/^\uFEFF/, '')
             .replace(/\r\n?/g, '\n')
@@ -191,7 +198,7 @@ Options:
             })
             .filter(Boolean)
             .map((line) => {
-                if (line.endsWith(';')) {
+                if (line.endsWith(';') || shouldSkipSemicolon(line)) {
                     return line;
                 }
                 return `${line};`;
