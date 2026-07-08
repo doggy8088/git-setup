@@ -85,7 +85,6 @@ ${CHANGES}
 
 ### 對應 npm 版本
 - npm 套件版本: [${NEW_VERSION}](https://www.npmjs.com/package/%40willh%2Fgit-setup/v/${NEW_VERSION})
-  （必須是超連結格式）
 EOF_NOTES
    ```
 
