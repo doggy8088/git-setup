@@ -453,6 +453,14 @@ Dockerfile   text eol=lf
         await cmdWithConfirm("git config --global alias.aca '!'\"gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca\"", interactive, ask);
     }
 
+    // git config --global alias.clearcache "!f() { git config --local feature.manyFiles false; git config --local index.skipHash false; git config --local core.untrackedCache false; git update-index --no-untracked-cache; git status; }; f"
+    const aliasClearcache = `!f() { git config --local feature.manyFiles false; git config --local index.skipHash false; git config --local core.untrackedCache false; git update-index --no-untracked-cache; git status; }; f`;
+    if (os === 'win32') {
+        await cmdWithConfirm(`git config --global alias.clearcache "${aliasClearcache.replace(/"/g, '\\"')}"`, interactive, ask);
+    } else {
+        await cmdWithConfirm(`git config --global alias.clearcache '${escapeForSingleQuotes(aliasClearcache)}'`, interactive, ask);
+    }
+
     if (os === 'win32' && fs.existsSync('C:/PROGRA~1/TortoiseGit/bin/TortoiseGitProc.exe')) {
         await cmdWithConfirm("git config --global alias.tlog \"!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe' /command:log /path:.", interactive, ask);
     }

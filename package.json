@@ -1,6 +1,6 @@
 {
   "name": "@willh/git-setup",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "A utility that helps to setup common Git config and alias settings",
   "bin": {
     "git-setup": "bin/index.js"

@@ -89,6 +89,7 @@ git config --global alias.liac "!gliac() { hash=$(pwd | { if command -v md5 >/de
 git config --global alias.acp "!gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
 git config --global alias.aca "!gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
 git config --global alias.cc  "!grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
+git config --global alias.clearcache "!f() { git config --local feature.manyFiles false; git config --local index.skipHash false; git config --local core.untrackedCache false; git update-index --no-untracked-cache; git status; }; f"
 
 # 必須是 Linux/macOS 平台才會執行以下設定
 git config --global alias.ignore '!'"gi() { curl -sL https://www.gitignore.io/api/\$@ ;}; gi"
@@ -97,6 +98,7 @@ git config --global alias.liac '!'"gliac() { hash=\$(pwd | { if command -v md5 >
 git config --global alias.acp '!'"gacp() { git add . && git commit --reuse-message=HEAD --amend && git push -f ;}; gacp"
 git config --global alias.aca '!'"gaca() { git add . && git commit --reuse-message=HEAD --amend ;}; gaca"
 git config --global alias.cc  '!'"grcc() { git reset --hard && git clean -fdx ;}; read -p 'Do you want to run the <<< git reset --hard && git clean -fdx >>> command? (Y/N) ' answer && [[ $answer == [Yy] ]] && grcc"
+git config --global alias.clearcache '!'"f() { git config --local feature.manyFiles false; git config --local index.skipHash false; git config --local core.untrackedCache false; git update-index --no-untracked-cache; git status; }; f"
 
 # 必須是 Windows 平台且有安裝 TortoiseGit 才會設定 tlog 這個 alias
 git config --global alias.tlog "!start 'C:\\PROGRA~1\\TortoiseGit\\bin\\TortoiseGitProc.exe' /command:log /path:."
@@ -275,7 +277,34 @@ flowchart TD
 - `workflow_dispatch` 會直接發佈（跳過版本比較），供臨時手動發佈使用。
 - `PUBLISH.md` 仍保留手動發佈備援：`npm publish --provenance --access public`。
 
-7. `alias.attributes` - 顯示建議的 .gitattributes 檔案內容
+7. `alias.clearcache` - 清除 Git 快取，解決 Oh-My-Zsh 等工具的 Git 狀態未更新問題
+
+    此工具會自動設定 `git clearcache` 命令,可清除本機 Git 快取設定，避免不必要的狀態快取問題:
+
+    ```sh
+    git clearcache
+    ```
+
+    這個命令等同於執行以下指令：
+
+    ```sh
+    git config --local feature.manyFiles false
+    git config --local index.skipHash false
+    git config --local core.untrackedCache false
+    git update-index --no-untracked-cache
+    git status
+    ```
+
+    這個命令會:
+    - 停用 `feature.manyFiles` 快取優化（避免大型倉庫快取問題）
+    - 停用 `index.skipHash` 跳過 index 雜湊計算的行為
+    - 停用 `core.untrackedCache` 未追蹤檔案快取
+    - 清除現有的未追蹤檔案快取索引
+    - 顯示最新的 `git status`
+
+    **注意**: 此命令僅修改目前倉庫的本機設定（`--local`），不影響全域 Git 設定。
+
+8. `alias.attributes` - 顯示建議的 .gitattributes 檔案內容
 
     此工具會自動設定 `git attributes` 命令,可快速查看本工具建議的 `.gitattributes` 檔案內容:
 

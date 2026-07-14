@@ -1,5 +1,14 @@
 # @willh/git-setup
 
+## 1.5.6
+
+- 新增 `git clearcache` alias，可清除本機 Git 快取設定，解決 Oh-My-Zsh 等工具遇到 Git 狀態未更新的問題。
+  - 執行 `git config --local feature.manyFiles false`
+  - 執行 `git config --local index.skipHash false`
+  - 執行 `git config --local core.untrackedCache false`
+  - 執行 `git update-index --no-untracked-cache`
+  - 執行 `git status`
+
 ## 1.5.3
 
 - 修正 `git ac` 精簡流程中對 `git diff --stat` 的參數順序，避免出現 `fatal: option '--stat' must come before non-option arguments`。
