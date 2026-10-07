@@ -8,6 +8,7 @@
   - 執行 `git config --local core.untrackedCache false`
   - 執行 `git update-index --no-untracked-cache`
   - 執行 `git status`
+- 優化 `git ac` 的 AI 提示詞，明確要求輸出純文字（不含 Markdown、code fence 或引號包裝），避免 commit 訊息前後偶爾出現三個反引號。
 
 ## 1.5.3
 
